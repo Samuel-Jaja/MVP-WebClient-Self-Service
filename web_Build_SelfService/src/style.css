@@ -1,0 +1,25 @@
+#app {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align:left;
+  border: 1.2px solid skyblue;
+  border-radius: 4px;
+  font-family: Roboto;
+}
+
+h1{
+  text-align: center;
+}
+
+/* Dark mode */
+body.dark-mode {
+  background-color: #222;
+  color: #fff;
+}
+
+/* Light mode */
+body.light-mode {
+  background-color: #fff;
+  color: #222;
+}
