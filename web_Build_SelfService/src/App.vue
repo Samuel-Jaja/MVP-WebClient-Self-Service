@@ -28,8 +28,10 @@
         <Card v-for="pullRequest in pullRequests" :key="pullRequest.id"
           :title="pullRequest.title"
           :author="pullRequest.user.login"
+          :status="pullRequest.status"
           :createdAt="pullRequest.created_at"
           :number="pullRequest.number"
+          
         />
       </template>
       <Footer></Footer>
@@ -50,6 +52,7 @@ interface PullRequest {
   user: {
     login: string;
   };
+  status: string;
   created_at: string;
   number: number;
 }

@@ -1,9 +1,10 @@
 <template>
   <div class="card">
     <h3 class="card-title"><strong>CCL Project:</strong> {{ title }}</h3>
-    <p class="card-author"><strong>Author:</strong> {{ author }}</p>
-    <p class="card-created-at"><strong>Created At:</strong> {{ createdAt }}</p>
-    <p class="card-number"><strong>Number:</strong> {{ number }}</p>
+    <p class="card-author">Author: {{ author }}</p>
+    <p class="card-status" :class="statusClass">Status: {{ status }} </p>
+    <p class="card-created-at"> {{ formattedCreatedAt }}</p>
+    <!-- <p class="card-number"><strong>Number:</strong> {{ number }}</p> -->
     <button v-if="!isLaunched" class="launch-button" @click="launch">
       {{ isLaunching ? 'Downloading...' : 'Launch' }}
     </button>
@@ -19,38 +20,61 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
+import moment from 'moment';
 
 export default defineComponent({
   props: {
     title: String,
     author: String,
+    status: String,
     createdAt: String,
     number: Number,
   },
-  data() {
-    return {
-      isLaunching: false,
-      isLaunched: false,
-      downloadPercentage: 0,
+  setup(props) {
+    const isLaunching = ref(false);
+    const isLaunched = ref(false);
+    const downloadPercentage = ref(0);
+
+    const launch = () => {
+      isLaunching.value = true;
+      downloadPercentage.value = 0;
+      simulateDownload();
     };
-  },
-  methods: {
-    launch() {
-      this.isLaunching = true;
-      this.downloadPercentage = 0;
-      this.simulateDownload();
-    },
-    simulateDownload() {
+
+    const simulateDownload = () => {
       const interval = setInterval(() => {
-        this.downloadPercentage += 1;
-        if (this.downloadPercentage >= 100) {
+        downloadPercentage.value += 1;
+        if (downloadPercentage.value >= 100) {
           clearInterval(interval);
-          this.isLaunching = false;
-          this.isLaunched = true;
+          isLaunching.value = false;
+          isLaunched.value = true;
         }
       }, 100); // Adjust the interval duration for slower download speed (in milliseconds)
-    },
+    };
+
+    const statusClass = computed(() => {
+      if (props.status === 'pending') {
+        return 'card-status card-status-pending';
+      } else if (props.status === 'approved') {
+        return 'card-status card-status-approved';
+      } else {
+        return 'card-status';
+      }
+    });
+
+    const formattedCreatedAt = computed(() => {
+      return moment(props.createdAt).format('Do MMMM YYYY');
+    });
+
+    return {
+      isLaunching,
+      isLaunched,
+      downloadPercentage,
+      launch,
+      statusClass,
+      formattedCreatedAt,
+    };
   },
 });
 </script>
@@ -61,38 +85,44 @@ export default defineComponent({
   border: 1px solid skyblue;
   padding: 10px;
   margin-bottom: 10px;
-  
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   position: relative; /* Ensure relative positioning for button alignment */
 }
 
-.card-title {
+/* .card-title{
   margin: 0;
   font-size: 18px;
   font-weight: bold;
 }
-
-.card-author,
-.card-created-at,
-.card-number {
-  margin-bottom: 5px;
-}
-
-.card-author strong,
-.card-created-at strong,
-.card-number strong {
+*/
+.card-created-at {
+  margin: 0;
+  font-size: 14px;
   font-weight: bold;
 }
 
-.card-author {
-  color: #555555;
-}
+.card-author
+.card-created-at
+.card-status
+{
+  margin: 20px;
+} 
 
-.card-created-at {
+/* .card-author strong,
+.card-created-at strong,
+.card-number strong {
+  font-weight: bold;
+} */
+
+/* .card-author {
+  color: #555555;
+} */
+
+/* .card-created-at {
   color: #888888;
   font-size: 14px;
-}
+} */
 
 .card-number {
   color: #333333;
@@ -147,25 +177,13 @@ export default defineComponent({
   color: #ffffff;
 }
 
-.launch-button {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  background-color: #007bff;
-  color: #ffffff;
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.5s; /* Add transition for smooth animation */
+
+
+.card-status-pending {
+  color: red;
 }
 
-.launch-button.downloaded {
-  transform: translateY(-50%) scale(0.95); /* Add scale transformation when button is downloaded */
+.card-status-approved {
+  color: green;
 }
-
-
-
 </style>
