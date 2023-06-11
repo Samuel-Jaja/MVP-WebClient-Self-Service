@@ -1,21 +1,20 @@
 <template>
   <div class="card">
     <div v-if="showSplashScreen" class="splash-screen">
-      
       <div class="splash-content">
         <div class="cyphercrescent-logo">
           <img src="./assets/ccl-logo.32b1677.png" alt="Cyphercrescent Image" />
         </div>
         <h1>Build Self-Service</h1>
         <div class="sepal_logo">
-          <img width="100" height="100" src="./assets/sepal_logo_de9d62126f.png" alt="Sepal Image" />
+          <img width="100" height="100" src="./assets/sepal_logo_de9d62126f.png" alt="SEPAL Image" />
         </div>
         <div class="progress-bar"></div>
       </div>
     </div>
     <div v-else>
       <div>
-        <img src="./assets/ccl-logo.32b1677.png" alt="Example Image" />
+        <img src="./assets/ccl-logo.32b1677.png" alt="Cyphercrescent Image" />
      </div>
       <ToggleButton/>
       <h1>SEPAL BUILDS SELF-SERVICE</h1>
@@ -28,10 +27,9 @@
         <Card v-for="pullRequest in pullRequests" :key="pullRequest.id"
           :title="pullRequest.title"
           :author="pullRequest.user.login"
-          :status="pullRequest.status"
+          :state="pullRequest.state"
           :createdAt="pullRequest.created_at"
           :number="pullRequest.number"
-          
         />
       </template>
       <Footer></Footer>
@@ -40,82 +38,58 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import { fetchOpenPullRequests } from './Services/githubService';
-import Card from './components/view/Card.vue';
-import ToggleButton from './components/view/ToggleButton.vue';
-import Footer from './components/view/Footer.vue';
+  import { defineComponent, ref, onMounted } from 'vue';
+  import { fetchOpenPullRequests } from './Services/githubService';
+  import Card from './components/view/Card.vue';
+  import ToggleButton from './components/view/ToggleButton.vue';
+  import Footer from './components/view/Footer.vue';
+  import {PullRequest} from './PR/PullRequest'
 
-interface PullRequest {
-  id: string;
-  title: string;
-  user: {
-    login: string;
-  };
-  status: string;
-  created_at: string;
-  number: number;
-}
+  export default defineComponent({
+    components: {
+      Card,
+      ToggleButton,
+      Footer,
+    },
+    
+    setup() {
+      const pullRequests = ref<PullRequest[]>([]);
+      const isLoading = ref(true);
+      const showSplashScreen = ref(true);
 
-export default defineComponent({
-  components: {
-    Card,
-    ToggleButton,
-    Footer,
-  },
-  setup() {
-    const pullRequests = ref<PullRequest[]>([]);
-    const isLoading = ref(true);
-    const showSplashScreen = ref(true);
+      onMounted(async () => {
+        try {
+          // Simulating loading delay
+          await new Promise(resolve => setTimeout(resolve, 6000));
+          const repo = 'WPF_BackgroundServices_App';
+          const data = await fetchOpenPullRequests(repo);
+          pullRequests.value = data;
+          isLoading.value = false;
+          showSplashScreen.value = false;
+        } catch (error) {
+          console.error(error);
+          isLoading.value = false;
+          showSplashScreen.value = false;
+        }
+      });
 
-    onMounted(async () => {
-      try {
-        // Simulating loading delay
-        await new Promise(resolve => setTimeout(resolve, 6000));
-        const repo = 'WPF_BackgroundServices_App';
-        const data = await fetchOpenPullRequests(repo);
-        pullRequests.value = data;
-        isLoading.value = false;
-        showSplashScreen.value = false;
-      } catch (error) {
-        console.error(error);
-        isLoading.value = false;
-        showSplashScreen.value = false;
-      }
-    });
-
-    return {
-      pullRequests,
-      isLoading,
-      showSplashScreen,
-    };
-  },
-});
+      return {
+        pullRequests,
+        isLoading,
+        showSplashScreen,
+      };
+    },
+  });
 </script>
 
-
-
 <style scoped>
-/* .card {
-  border: 1.0px solid skyblue;
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 10px;
-} */
-
-/* h1{
-  color: darkblue;
-  font-weight: bold;
-  font-size: 40px;
-} */
-
 .splash-screen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 255, 0.3); /* Sky blue background */
+  background-color: rgba(0, 0, 255, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -153,6 +127,12 @@ export default defineComponent({
     transform: rotate(360deg);
   }
 }
+.splash-content h1 {
+  color: darkblue;; /* Blue font color */
+  margin-top: 0;
+  font-size: 35px;
+  font-weight: bold;
+}
 
 /* .loader {
   margin: 0 auto;
@@ -166,18 +146,10 @@ export default defineComponent({
 
 } */
 
-.splash-content h1 {
-  color: darkblue;; /* Blue font color */
-  margin-top: 0;
-  font-size: 35px;
-  font-weight: bold;
-}
-
 /* .splash-content .cyphercrescent-logo .img{
   width:50px;
   height:100px;
 } */
-
 </style>
 
 
